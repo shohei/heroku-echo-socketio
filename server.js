@@ -1,26 +1,21 @@
-var port = process.env.PORT || 8085;
-console.log('listening on '+port);
-var WebSocketServer = require('ws').Server;
-var wss = new WebSocketServer({port: port});
+var client = require('socket.io-client');
 
-wss.broadcast = function(data) {
-  for (var i in this.clients)
-    this.clients[i].send(data);
-};
+var port = 9001;
+var io = require('socket.io').listen(port);
+console.log((new Date()) + " Server is listening on port " + port);
 
-wss.on('connection', function connection(ws) {
-  ws.on('open', function () {
-    console.log('connected');
+io.sockets.on('connection', function(socket) {
+  socket.on('open',function(data){
+    console.log(data);
   });
 
-
-  ws.on('close', function () {
-    console.log('disconnected');
+  socket.on('message', function(message) {
+    socket.broadcast.emit('message', message);
   });
 
-  ws.on('message', function (data, flags) {
-    wss.broadcast(data);
-    // ws.send(data);
+  socket.on('disconnect', function() {
+    socket.broadcast.emit('user disconnected');
   });
-
 });
+
+
